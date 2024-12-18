@@ -1,9 +1,9 @@
-import { ClientCaller } from './client';
+import { ClientCaller } from '../client';
 
-export class Gateways {
+export class Predictions {
   constructor(private caller: ClientCaller) {}
 
-  create() {
+  run() {
     console.log(this.caller);
   }
 }

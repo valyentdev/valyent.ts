@@ -1,6 +1,6 @@
-import { ClientCaller } from './client';
+import { ClientCaller } from '../client';
 
-export class Gateways {
+export class Sandboxes {
   constructor(private caller: ClientCaller) {}
 
   create() {

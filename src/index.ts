@@ -1,3 +1,4 @@
+export * from './ai';
 export * from './client';
 export * from './fleets';
 export * from './gateways';

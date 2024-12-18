@@ -4,7 +4,7 @@ export type Fleet = {
   id: string;
   namespace: string;
   name: string;
-  created_at: number;
+  created_at: string;
   status: FleetStatus;
 };
 
@@ -29,6 +29,20 @@ export default class Fleets {
     return this.caller.call<Array<Fleet>>({
       method: 'GET',
       path: '/fleets',
+    });
+  }
+
+  async get(fleet: string) {
+    return this.caller.call<Fleet>({
+      method: 'GET',
+      path: `/fleets/${fleet}`,
+    });
+  }
+
+  async delete(fleet: string) {
+    return this.caller.call({
+      method: 'DELETE',
+      path: `/fleets/${fleet}`,
     });
   }
 }
