@@ -71,6 +71,8 @@ export class ClientCaller {
      */
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${this.secret}`);
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
 
     /**
      * Compute body.
@@ -83,11 +85,16 @@ export class ClientCaller {
     /**
      * Call Fly.io's Machines API.
      */
-    const response = await fetch(url, {
-      headers,
-      method,
-      body,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers,
+        method,
+        body,
+      });
+    } catch (error) {
+      return new Failure(error as Error);
+    }
 
     if (!response.ok) {
       return new Failure(
