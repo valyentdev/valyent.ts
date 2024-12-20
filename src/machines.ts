@@ -157,7 +157,7 @@ export type ExecResult = {
   exit_code: number;
 };
 
-enum MachineStatus {
+export enum MachineStatus {
   Created = 'created',
   Preparing = 'preparing',
   Starting = 'starting',
@@ -168,7 +168,7 @@ enum MachineStatus {
   Destroyed = 'destroyed',
 }
 
-enum RestartPolicy {
+export enum RestartPolicy {
   Always = 'always',
   OnFailure = 'on-failure',
   Never = 'never',

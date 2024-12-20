@@ -18,31 +18,31 @@ export type CreateGatewayPayload = {
 export class Gateways {
   constructor(private caller: ClientCaller) {}
 
-  create(fleet: string, payload: CreateGatewayPayload) {
+  create(payload: CreateGatewayPayload) {
     return this.caller.call<Gateway>({
-      path: `/fleets/${fleet}/gateways`,
+      path: `/gateways`,
       method: 'POST',
       payload,
     });
   }
 
-  list(fleet: string) {
+  list(fleet?: string) {
     return this.caller.call<Array<Gateway>>({
-      path: `/fleets/${fleet}/gateways`,
+      path: `/gateways?fleet=${fleet}`,
       method: 'GET',
     });
   }
 
-  get(fleet: string, gateway: string) {
+  get(gateway: string) {
     return this.caller.call<Gateway>({
-      path: `/fleets/${fleet}/gateways/${gateway}`,
+      path: `/gateways/${gateway}`,
       method: 'GET',
     });
   }
 
-  delete(fleet: string, gateway: string) {
+  delete(gateway: string) {
     return this.caller.call({
-      path: `/fleets/${fleet}/gateways/${gateway}`,
+      path: `/gateways/${gateway}`,
       method: 'DELETE',
     });
   }
