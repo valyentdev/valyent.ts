@@ -44,6 +44,7 @@ export class Gateways {
     return this.caller.call({
       path: `/gateways/${gateway}`,
       method: 'DELETE',
+      noResponseData: true,
     });
   }
 }

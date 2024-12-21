@@ -29,6 +29,7 @@ export class Machines {
     return this.caller.call({
       method: 'DELETE',
       path: `/fleets/${fleet}/machines/${machine}`,
+      noResponseData: true,
     });
   }
 }

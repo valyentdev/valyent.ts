@@ -55,10 +55,12 @@ export class ClientCaller {
     path,
     payload,
     method,
+    noResponseData,
   }: {
     path: string;
     payload?: Record<string, any>;
     method: string;
+    noResponseData?: boolean;
   }): Promise<Result<T>> {
     /**
      * Compute URL.
@@ -100,6 +102,10 @@ export class ClientCaller {
       return new Failure(
         new Error(`HTTP request failed: ${response.statusText}.`)
       );
+    }
+
+    if (noResponseData) {
+      return new Success({} as T);
     }
 
     try {

@@ -43,6 +43,7 @@ export default class Fleets {
     return this.caller.call({
       method: 'DELETE',
       path: `/fleets/${fleet}`,
+      noResponseData: true,
     });
   }
 }
