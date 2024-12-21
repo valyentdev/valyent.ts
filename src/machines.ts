@@ -39,6 +39,13 @@ export class Machines {
       path: `/fleets/${fleet}/machines/${machine}/logs?follow=${follow}`,
     });
   }
+
+  listEvents(fleet: string, machine: string) {
+    return this.caller.call<Array<MachineEvent>>({
+      method: 'GET',
+      path: `/fleets/${fleet}/machines/${machine}/events`,
+    });
+  }
 }
 
 export type LogEntry = {
