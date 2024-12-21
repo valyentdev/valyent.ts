@@ -32,7 +32,22 @@ export class Machines {
       noResponseData: true,
     });
   }
+
+  getLogs(fleet: string, machine: string, follow: boolean = false) {
+    return this.caller.call<Array<LogEntry>>({
+      method: 'GET',
+      path: `/fleets/${fleet}/machines/${machine}/logs?follow=${follow}`,
+    });
+  }
 }
+
+export type LogEntry = {
+  timestamp: number;
+  instance_id: string;
+  source: string;
+  level: string;
+  message: string;
+};
 
 export type StopConfig = {
   timeout?: number; // in seconds
