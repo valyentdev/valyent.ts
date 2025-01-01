@@ -3,8 +3,7 @@ import Fleets from './fleets';
 import { Gateways } from './gateways';
 import { Machines } from './machines';
 
-export const VALYENT_API_ENDPOINT = 'https://api.valyent.dev';
-export const RAVEL_API_ENDPOINT = 'https://ravel.valyent.dev';
+export const VALYENT_API_ENDPOINT = 'https://console.valyent.cloud';
 
 export class Client {
   public ai: Ai;
@@ -15,34 +14,17 @@ export class Client {
   constructor(
     namespace: string,
     secret: string,
-    ravelEndpoint: string = VALYENT_API_ENDPOINT,
-    valyentEndpoint: string = RAVEL_API_ENDPOINT
+    endpoint: string = VALYENT_API_ENDPOINT
   ) {
-    const ravelCaller = new ClientCaller(namespace, secret, ravelEndpoint);
+    const ravelCaller = new ClientCaller(namespace, secret, endpoint);
     this.fleets = new Fleets(ravelCaller);
     this.gateways = new Gateways(ravelCaller);
     this.machines = new Machines(ravelCaller);
 
-    const valyentCaller = new ClientCaller(namespace, secret, valyentEndpoint);
+    const valyentCaller = new ClientCaller(namespace, secret, endpoint);
     this.ai = new Ai(valyentCaller);
   }
 }
-
-export class Success<Value> {
-  public readonly success = true;
-
-  constructor(public readonly value: Value) {}
-}
-
-export class Failure<Reason extends Error> {
-  public readonly success = false;
-
-  constructor(public readonly reason: Reason) {}
-}
-
-export type Result<Value, Reason extends Error = Error> =
-  | { success: true; value: Value }
-  | { success: false; reason: Reason };
 
 export class ClientCaller {
   constructor(
@@ -61,7 +43,7 @@ export class ClientCaller {
     payload?: Record<string, any>;
     method: string;
     noResponseData?: boolean;
-  }): Promise<Result<T>> {
+  }): Promise<T> {
     /**
      * Compute URL.
      */
@@ -85,34 +67,23 @@ export class ClientCaller {
     }
 
     /**
-     * Call Fly.io's Machines API.
+     * Call Ravel API.
      */
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        headers,
-        method,
-        body,
-      });
-    } catch (error) {
-      return new Failure(error as Error);
-    }
+    const response = await fetch(url, {
+      headers,
+      method,
+      body,
+    });
 
     if (!response.ok) {
-      return new Failure(
-        new Error(`HTTP request failed: ${response.statusText}.`)
-      );
+      throw new Error();
     }
 
     if (noResponseData) {
-      return new Success({} as T);
+      return null as T;
     }
 
-    try {
-      const data = (await response.json()) as T;
-      return new Success(data);
-    } catch {
-      return new Failure(new Error('Failed to read JSON data.'));
-    }
+    const data = (await response.json()) as T;
+    return data;
   }
 }

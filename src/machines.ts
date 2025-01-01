@@ -25,10 +25,10 @@ export class Machines {
     });
   }
 
-  delete(fleet: string, machine: string) {
+  delete(fleet: string, machine: string, force: boolean = false) {
     return this.caller.call({
       method: 'DELETE',
-      path: `/fleets/${fleet}/machines/${machine}`,
+      path: `/fleets/${fleet}/machines/${machine}?force=${force}`,
       noResponseData: true,
     });
   }
@@ -44,6 +44,23 @@ export class Machines {
     return this.caller.call<Array<MachineEvent>>({
       method: 'GET',
       path: `/fleets/${fleet}/machines/${machine}/events`,
+    });
+  }
+
+  start(fleet: string, machine: string) {
+    return this.caller.call({
+      method: 'POST',
+      path: `/fleets/${fleet}/machines/${machine}/start`,
+      noResponseData: true,
+    });
+  }
+
+  stop(fleet: string, machine: string, config: StopConfig) {
+    return this.caller.call({
+      method: 'POST',
+      path: `/fleets/${fleet}/machines/${machine}/stop`,
+      payload: config,
+      noResponseData: true,
     });
   }
 }

@@ -6764,6 +6764,13 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
+"valyent.ts@file:":
+  version "0.1.0"
+  resolved "file:"
+  dependencies:
+    date-fns "^4.1.0"
+    valyent.ts "file:"
+
 verror@1.10.0:
   version "1.10.0"
   resolved "https://registry.npmjs.org/verror/-/verror-1.10.0.tgz"
