@@ -12,25 +12,34 @@ export class Client {
   public machines: Machines;
 
   constructor(
-    namespace: string,
     secret: string,
+    namespace?: string,
     endpoint: string = VALYENT_API_ENDPOINT
   ) {
-    const ravelCaller = new ClientCaller(namespace, secret, endpoint);
+    const ravelCaller = new ClientCaller(secret, endpoint, namespace);
     this.fleets = new Fleets(ravelCaller);
     this.gateways = new Gateways(ravelCaller);
     this.machines = new Machines(ravelCaller);
 
-    const valyentCaller = new ClientCaller(namespace, secret, endpoint);
+    const valyentCaller = new ClientCaller(secret, endpoint, namespace);
     this.ai = new Ai(valyentCaller);
+  }
+}
+
+export class FetchErrorWithPayload extends Error {
+  constructor(
+    message: string,
+    public payload: Record<string, string | Record<string, string>>
+  ) {
+    super(message);
   }
 }
 
 export class ClientCaller {
   constructor(
-    private namespace: string,
     private secret: string,
-    private endpoint: string
+    public endpoint: string,
+    public namespace?: string
   ) {}
 
   async call<T>({
@@ -48,7 +57,7 @@ export class ClientCaller {
      * Compute URL.
      */
     const url = new URL(path, this.endpoint);
-    url.searchParams.set('namespace', this.namespace);
+    if (this.namespace) url.searchParams.set('namespace', this.namespace);
 
     /**
      * Compute headers.
@@ -76,11 +85,22 @@ export class ClientCaller {
     });
 
     if (!response.ok) {
-      throw new Error();
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          `Request failed with status: ${response.status} (${response.statusText})`
+        );
+      }
+      throw new FetchErrorWithPayload(
+        `Request failed with status: ${response.status} (${response.statusText})`,
+        data
+      );
     }
 
     if (noResponseData) {
-      return null as T;
+      return (undefined as unknown) as T;
     }
 
     const data = (await response.json()) as T;

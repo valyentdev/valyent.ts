@@ -33,11 +33,62 @@ export class Machines {
     });
   }
 
-  getLogs(fleet: string, machine: string, follow: boolean = false) {
+  async getLogs(fleet: string, machine: string) {
     return this.caller.call<Array<LogEntry>>({
       method: 'GET',
-      path: `/fleets/${fleet}/machines/${machine}/logs?follow=${follow}`,
+      path: `/fleets/${fleet}/machines/${machine}/logs`,
     });
+  }
+
+  async *getLogsStream(
+    fleet: string,
+    machine: string
+  ): AsyncIterableIterator<LogEntry> {
+    const url = new URL(
+      `/fleets/${fleet}/machines/${machine}/logs`,
+      this.caller.endpoint
+    );
+    url.searchParams.set('follow', 'true');
+    if (this.caller.namespace) {
+      url.searchParams.set('namespace', this.caller.namespace);
+    }
+
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch NDJSON stream: ${response.statusText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No reader available on response body');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    // Create an async generator to yield logs as they are parsed
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process lines in the buffer
+      let boundary = buffer.indexOf('\n');
+      while (boundary !== -1) {
+        const line = buffer.slice(0, boundary);
+        try {
+          const jsonObject = JSON.parse(line);
+          yield jsonObject; // Yield each parsed log entry
+        } catch (err) {
+          console.error('Error parsing line:', err);
+        }
+
+        // Slice off the processed line
+        buffer = buffer.slice(boundary + 1);
+        boundary = buffer.indexOf('\n');
+      }
+    }
   }
 
   listEvents(fleet: string, machine: string) {
@@ -152,7 +203,7 @@ export type MachineEventPayload = {
 export type CreateMachinePayload = {
   region: string;
   config: MachineConfig;
-  skip_start: boolean;
+  skip_start?: boolean;
 };
 
 export type MachineStartEventPayload = {
