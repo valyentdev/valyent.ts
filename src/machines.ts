@@ -1,25 +1,84 @@
 import { ClientCaller } from './client';
+import { Filesystem } from './filesystem';
+
+export class Machine {
+  public fs: Filesystem;
+
+  constructor(
+    public id: string,
+    private fleetId: string,
+    private machines: Machines
+  ) {
+    this.fs = new Filesystem(machines.caller.apiToken, id);
+  }
+
+  listEvents() {
+    return this.machines.listEvents(this.fleetId, this.id);
+  }
+
+  getLogs() {
+    return this.machines.getLogs(this.fleetId, this.id);
+  }
+
+  start() {
+    return this.machines.start(this.fleetId, this.id);
+  }
+
+  stop(config: StopConfig) {
+    return this.machines.stop(this.fleetId, this.id, config);
+  }
+
+  delete() {
+    return this.machines.delete(this.fleetId, this.id);
+  }
+
+  wait(status: string, timeoutInSeconds?: number) {
+    return this.machines.wait(this.fleetId, this.id, status, timeoutInSeconds);
+  }
+}
 
 export class Machines {
-  constructor(private caller: ClientCaller) {}
+  constructor(public caller: ClientCaller) {}
 
-  create(fleet: string, payload: CreateMachinePayload) {
-    return this.caller.call<Machine>({
+  async create(fleet: string, payload: CreateMachinePayload): Promise<Machine> {
+    const record = await this.createRecord(fleet, payload);
+    return new Machine(record.id, fleet, this);
+  }
+
+  createRecord(
+    fleet: string,
+    payload: CreateMachinePayload
+  ): Promise<MachineRecord> {
+    return this.caller.call<MachineRecord>({
       method: 'POST',
       path: `/fleets/${fleet}/machines`,
       payload,
     });
   }
 
-  list(fleet: string) {
-    return this.caller.call<Array<Machine>>({
+  async list(fleet: string): Promise<Array<Machine>> {
+    const records = await this.listRecords(fleet);
+    const machines: Machine[] = [];
+    for (const record of records) {
+      machines.push(new Machine(record.id, fleet, this));
+    }
+    return machines;
+  }
+
+  listRecords(fleet: string): Promise<Array<MachineRecord>> {
+    return this.caller.call<Array<MachineRecord>>({
       method: 'GET',
       path: `/fleets/${fleet}/machines`,
     });
   }
 
-  get(fleet: string, machine: string) {
-    return this.caller.call<Machine>({
+  async get(fleet: string, machine: string): Promise<Machine> {
+    const record = await this.getRecord(fleet, machine);
+    return new Machine(record.id, fleet, this);
+  }
+
+  getRecord(fleet: string, machine: string): Promise<MachineRecord> {
+    return this.caller.call<MachineRecord>({
       method: 'GET',
       path: `/fleets/${fleet}/machines/${machine}`,
     });
@@ -29,11 +88,11 @@ export class Machines {
     return this.caller.call({
       method: 'DELETE',
       path: `/fleets/${fleet}/machines/${machine}?force=${force}`,
-      noResponseData: true,
+      expectNoResponseData: true,
     });
   }
 
-  async getLogs(fleet: string, machine: string) {
+  getLogs(fleet: string, machine: string): Promise<Array<LogEntry>> {
     return this.caller.call<Array<LogEntry>>({
       method: 'GET',
       path: `/fleets/${fleet}/machines/${machine}/logs`,
@@ -91,27 +150,41 @@ export class Machines {
     }
   }
 
-  listEvents(fleet: string, machine: string) {
+  listEvents(fleet: string, machine: string): Promise<Array<MachineEvent>> {
     return this.caller.call<Array<MachineEvent>>({
       method: 'GET',
       path: `/fleets/${fleet}/machines/${machine}/events`,
     });
   }
 
-  start(fleet: string, machine: string) {
+  start(fleet: string, machine: string): Promise<void> {
     return this.caller.call({
       method: 'POST',
       path: `/fleets/${fleet}/machines/${machine}/start`,
-      noResponseData: true,
+      expectNoResponseData: true,
     });
   }
 
-  stop(fleet: string, machine: string, config: StopConfig) {
+  stop(fleet: string, machine: string, config: StopConfig): Promise<void> {
     return this.caller.call({
       method: 'POST',
       path: `/fleets/${fleet}/machines/${machine}/stop`,
       payload: config,
-      noResponseData: true,
+      expectNoResponseData: true,
+    });
+  }
+
+  wait(
+    fleet: string,
+    machine: string,
+    status: string,
+    timeoutInSeconds?: number
+  ): Promise<void> {
+    return this.caller.call({
+      method: 'POST',
+      path: `/fleets/${fleet}/machines/${machine}/stop`,
+      expectNoResponseData: true,
+      queryParams: { status, timeoutInSeconds },
     });
   }
 }
@@ -165,7 +238,7 @@ export type Resources = {
   memory_mb: number; // in MB
 };
 
-export type Machine = {
+export type MachineRecord = {
   id: string;
   namespace: string;
   fleet: string;
@@ -204,6 +277,7 @@ export type CreateMachinePayload = {
   region: string;
   config: MachineConfig;
   skip_start?: boolean;
+  enable_machine_gateway?: boolean;
 };
 
 export type MachineStartEventPayload = {

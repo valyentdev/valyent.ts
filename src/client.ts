@@ -12,16 +12,16 @@ export class Client {
   public machines: Machines;
 
   constructor(
-    secret: string,
+    apiToken: string,
     namespace?: string,
     endpoint: string = VALYENT_API_ENDPOINT
   ) {
-    const ravelCaller = new ClientCaller(secret, endpoint, namespace);
+    const ravelCaller = new ClientCaller(apiToken, endpoint, namespace);
     this.fleets = new Fleets(ravelCaller);
     this.gateways = new Gateways(ravelCaller);
     this.machines = new Machines(ravelCaller);
 
-    const valyentCaller = new ClientCaller(secret, endpoint, namespace);
+    const valyentCaller = new ClientCaller(apiToken, endpoint, namespace);
     this.ai = new Ai(valyentCaller);
   }
 }
@@ -37,7 +37,7 @@ export class FetchErrorWithPayload extends Error {
 
 export class ClientCaller {
   constructor(
-    private secret: string,
+    public apiToken: string,
     public endpoint: string,
     public namespace?: string
   ) {}
@@ -46,12 +46,16 @@ export class ClientCaller {
     path,
     payload,
     method,
-    noResponseData,
+    expectNoResponseData,
+    expectTextResponse,
+    queryParams,
   }: {
     path: string;
     payload?: Record<string, any>;
     method: string;
-    noResponseData?: boolean;
+    expectNoResponseData?: boolean;
+    expectTextResponse?: boolean;
+    queryParams?: Record<string, string | number | undefined>;
   }): Promise<T> {
     /**
      * Compute URL.
@@ -59,11 +63,19 @@ export class ClientCaller {
     const url = new URL(path, this.endpoint);
     if (this.namespace) url.searchParams.set('namespace', this.namespace);
 
+    if (queryParams) {
+      for (const param in queryParams) {
+        if (queryParams[param] !== undefined) {
+          url.searchParams.set(param, queryParams[param]!.toString());
+        }
+      }
+    }
+
     /**
      * Compute headers.
      */
     const headers = new Headers();
-    headers.append('Authorization', `Bearer ${this.secret}`);
+    headers.append('Authorization', `Bearer ${this.apiToken}`);
     headers.append('Content-Type', 'application/json');
     headers.append('Accept', 'application/json');
 
@@ -99,11 +111,15 @@ export class ClientCaller {
       );
     }
 
-    if (noResponseData) {
+    if (expectNoResponseData) {
       return (undefined as unknown) as T;
     }
 
-    const data = (await response.json()) as T;
-    return data;
+    if (expectTextResponse) {
+      return ((await response.text()) as unknown) as T;
+    } else {
+      const data = (await response.json()) as T;
+      return data;
+    }
   }
 }
