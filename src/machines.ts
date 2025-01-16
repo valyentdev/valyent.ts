@@ -1,4 +1,4 @@
-import { ClientCaller } from './client';
+import { ClientCaller, FetchErrorWithPayload } from './client';
 import { Filesystem } from './filesystem';
 
 export class Machine {
@@ -114,7 +114,21 @@ export class Machines {
 
     const response = await fetch(url, { method: 'GET' });
     if (!response.ok) {
-      throw new Error(`Failed to fetch NDJSON stream: ${response.statusText}`);
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        throw new FetchErrorWithPayload(
+          `Failed to fetch NDJSON stream: ${response.status} (${response.statusText})`,
+          {
+            url: url.toString(),
+          }
+        );
+      }
+      throw new FetchErrorWithPayload(
+        `Failed to fetch NDJSON stream: ${response.status} (${response.statusText})`,
+        { ...data, url: url.toString() }
+      );
     }
 
     const reader = response.body?.getReader();
@@ -181,10 +195,10 @@ export class Machines {
     timeoutInSeconds?: number
   ): Promise<void> {
     return this.caller.call({
-      method: 'POST',
-      path: `/fleets/${fleet}/machines/${machine}/stop`,
+      method: 'GET',
+      path: `/fleets/${fleet}/machines/${machine}/wait`,
       expectNoResponseData: true,
-      queryParams: { status, timeoutInSeconds },
+      queryParams: { status, timeout: timeoutInSeconds },
     });
   }
 }
