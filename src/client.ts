@@ -1,4 +1,3 @@
-import { Ai } from './ai/ai';
 import Fleets from './fleets';
 import { Gateways } from './gateways';
 import { Machines } from './machines';
@@ -6,7 +5,6 @@ import { Machines } from './machines';
 export const VALYENT_API_ENDPOINT = 'https://console.valyent.cloud';
 
 export class Client {
-  public ai: Ai;
   public fleets: Fleets;
   public gateways: Gateways;
   public machines: Machines;
@@ -20,9 +18,6 @@ export class Client {
     this.fleets = new Fleets(ravelCaller);
     this.gateways = new Gateways(ravelCaller);
     this.machines = new Machines(ravelCaller);
-
-    const valyentCaller = new ClientCaller(apiToken, endpoint, namespace);
-    this.ai = new Ai(valyentCaller);
   }
 }
 
