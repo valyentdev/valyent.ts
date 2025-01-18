@@ -221,7 +221,6 @@ export type MachineConfig = {
   guest: GuestConfig;
   workload: Workload;
   stop_config?: StopConfig;
-  auto_destroy?: boolean;
 };
 
 export type GuestConfig = {
@@ -234,6 +233,7 @@ export type Workload = {
   restart?: RestartPolicyConfig;
   env?: string[];
   init?: InitConfig;
+  auto_destroy?: boolean;
 };
 
 export type InitConfig = {
