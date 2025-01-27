@@ -47,6 +47,10 @@ export class Filesystem {
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'multipart/form-data');
 
+    if (this.clientCaller.apiToken) {
+      headers.append('Authorization', `Bearer ${this.clientCaller.apiToken}`);
+    }
+
     await fetch(`${this.clientCaller.endpoint}/fs/write`, {
       method: 'POST',
       body: formData,
