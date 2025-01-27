@@ -1,15 +1,15 @@
 import { ClientCaller, FetchErrorWithPayload } from './client';
-import { Filesystem } from './filesystem';
+import { Initd } from './initd';
 
 export class Machine {
-  public fs: Filesystem;
+  public initd: Initd;
 
   constructor(
     public id: string,
     private fleetId: string,
     private machines: Machines
   ) {
-    this.fs = new Filesystem(machines.caller.apiToken, id);
+    this.initd = new Initd(this.machines.caller.apiToken, id);
   }
 
   listEvents() {
@@ -34,6 +34,10 @@ export class Machine {
 
   wait(status: string, timeoutInSeconds?: number) {
     return this.machines.wait(this.fleetId, this.id, status, timeoutInSeconds);
+  }
+
+  exec(options: ExecOptions) {
+    return this.machines.exec(this.fleetId, this.id, options);
   }
 }
 

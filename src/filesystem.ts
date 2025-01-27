@@ -12,14 +12,7 @@ export type FSEntry = {
  * Filesystem wraps a series of operations on the filesystem, provided by Ravel initd API.
  */
 export class Filesystem {
-  private clientCaller: ClientCaller;
-
-  constructor(apiToken: string, machineID: string) {
-    this.clientCaller = new ClientCaller(
-      apiToken,
-      `${machineID}-initd.valyent.dev`
-    );
-  }
+  constructor(private clientCaller: ClientCaller) {}
 
   ls(path: string = '/') {
     return this.clientCaller.call<Array<FSEntry>>({
