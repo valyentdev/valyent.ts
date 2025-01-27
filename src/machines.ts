@@ -188,6 +188,18 @@ export class Machines {
     });
   }
 
+  exec(
+    fleet: string,
+    machine: string,
+    options: ExecOptions
+  ): Promise<ExecResult> {
+    return this.caller.call<ExecResult>({
+      method: 'POST',
+      path: `/fleets/${fleet}/machines/${machine}/exec`,
+      payload: options,
+    });
+  }
+
   wait(
     fleet: string,
     machine: string,
