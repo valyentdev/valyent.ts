@@ -10,7 +10,10 @@ export class Initd {
   public fs: Filesystem;
 
   constructor(apiToken: string, machineID: string) {
-    this.caller = new ClientCaller(apiToken, `${machineID}-initd.valyent.dev`);
+    this.caller = new ClientCaller(
+      apiToken,
+      `https://${machineID}-initd.valyent.dev`
+    );
     this.fs = new Filesystem(this.caller);
   }
 

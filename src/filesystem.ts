@@ -48,6 +48,7 @@ export class Filesystem {
     headers.append('Content-Type', 'multipart/form-data');
 
     await fetch(`${this.clientCaller.endpoint}/fs/write`, {
+      method: 'POST',
       body: formData,
       headers,
     });
