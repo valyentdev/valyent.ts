@@ -38,7 +38,20 @@ export class Filesystem {
     });
   }
 
-  uploadFile() {}
+  async uploadFile(path: string, file: string | Blob) {
+    const formData = new FormData();
+    formData.append('path', path);
+    formData.append('file', file);
+
+    const headers = new Headers();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'multipart/form-data');
+
+    await fetch(`${this.clientCaller.endpoint}/fs/write`, {
+      body: formData,
+      headers,
+    });
+  }
 
   rm(path: string) {
     return this.clientCaller.call<string>({
