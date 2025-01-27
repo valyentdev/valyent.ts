@@ -2,7 +2,7 @@ import Fleets from './fleets';
 import { Gateways } from './gateways';
 import { Machines } from './machines';
 
-export const VALYENT_API_ENDPOINT = 'https://console.valyent.cloud';
+export const VALYENT_API_ENDPOINT = 'https://console.valyent.cloud/v1';
 
 export class Client {
   public fleets: Fleets;
@@ -55,7 +55,7 @@ export class ClientCaller {
     /**
      * Compute URL.
      */
-    const url = new URL(path, this.endpoint);
+    const url = new URL(this.endpoint + path);
     if (this.namespace) url.searchParams.set('namespace', this.namespace);
 
     if (queryParams) {
