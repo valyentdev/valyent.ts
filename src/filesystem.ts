@@ -39,6 +39,11 @@ export class Filesystem {
   }
 
   async uploadFile(path: string, file: string | Blob) {
+    if (typeof file === 'string') {
+      const blob = new Blob([file], { type: 'text/plain' });
+      file = new File([blob], path, { type: 'text/plain' });
+    }
+
     const formData = new FormData();
     formData.append('path', path);
     formData.append('file', file);
@@ -51,11 +56,15 @@ export class Filesystem {
       headers.append('Authorization', `Bearer ${this.clientCaller.apiToken}`);
     }
 
-    await fetch(`${this.clientCaller.endpoint}/fs/write`, {
+    const response = await fetch(`${this.clientCaller.endpoint}/fs/write`, {
       method: 'POST',
       body: formData,
       headers,
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload file: ${response.statusText}`);
+    }
   }
 
   rm(path: string) {
