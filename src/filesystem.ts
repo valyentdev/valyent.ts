@@ -50,7 +50,6 @@ export class Filesystem {
 
     const headers = new Headers();
     headers.append('Accept', 'application/json');
-    headers.append('Content-Type', 'multipart/form-data');
 
     if (this.clientCaller.apiToken) {
       headers.append('Authorization', `Bearer ${this.clientCaller.apiToken}`);
