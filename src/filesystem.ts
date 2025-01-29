@@ -32,7 +32,7 @@ export class Filesystem {
 
   readFile(path: string) {
     return this.clientCaller.call<string>({
-      method: 'POST',
+      method: 'GET',
       path: `/fs/read?path=${path}`,
       expectTextResponse: true,
     });
